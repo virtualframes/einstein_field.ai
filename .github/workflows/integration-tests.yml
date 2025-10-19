@@ -1,0 +1,33 @@
+name: integration-tests
+on: [push, pull_request]
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: efai
+          POSTGRES_USER: efai
+          POSTGRES_PASSWORD: efai
+        ports: ['5432:5432']
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install -r backend/requirements.txt
+      - name: Start backend
+        run: |
+          cd backend
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 2
+      - name: Run integration script
+        run: |
+          python -c "import requests; r=requests.post('http://localhost:8000/submit', json={'text':'test'}); print(r.json())"

@@ -1,0 +1,5 @@
+httpx
+sympy
+python-dotenv
+requests
+cryptography

@@ -1,0 +1,31 @@
+name: agent-integration
+on: [push, pull_request]
+jobs:
+  agent_interaction_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start backend
+        run: |
+          cp .env.example .env
+          docker-compose up -d backend postgres redis
+
+      - name: Run Jules agent
+        run: docker-compose run jules
+
+      - name: Run Ana agent (for conflict test)
+        # We will simulate another agent's intent by calling the efai-agent CLI
+        run: |
+          docker-compose run --entrypoint "python agents/efai-agent/efai_agent.py intent --files agents/verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
+
+      - name: Check for conflicts
+        run: |
+          curl http://localhost:8000/events | jq '.[] | select(.action=="intent")' > intents.json
+          python scripts/check_conflicts.py intents.json
+
+      - name: Run advanced tests
+        run: |
+          pip install -r backend/requirements.txt
+          pytest -q tests/jules/test_advanced.py
