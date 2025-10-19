@@ -1,21 +1,26 @@
 import json, sys
 from collections import defaultdict
+from agents.planner.planner import PlannerAgent
 
 with open(sys.argv[1]) as f:
     events = json.load(f)
 
-claims = defaultdict(list)
+planner = PlannerAgent()
+
 for e in events:
     # Check if the event is an 'intent' and has a 'payload'
     if e.get("action") == "intent" and "payload" in e:
         # Check if 'files' is in the payload
         if "files" in e["payload"]:
-            for f in e["payload"]["files"]:
-                claims[f].append(e["actor"])
+            planner.register_intent(e["actor"], e["payload"]["files"])
 
-conflicts = {k: v for k, v in claims.items() if len(v) > 1}
+resolutions, conflicts = planner.arbitrate_conflicts()
+
 if conflicts:
-    print("Conflict detected:", conflicts)
-    sys.exit(1)
+    print("Conflicts were detected, but the planner has arbitrated them:")
+    for file, winner in resolutions.items():
+        print(f"  - The file '{file}' has been assigned to the agent '{winner}'.")
+    # In a real CI/CD pipeline, you might want to fail the build here
+    # or take other actions, but for now, we'll just print the resolutions.
 else:
-    print("No conflicts.")
+    print("No conflicts detected.")

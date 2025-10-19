@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
       - name: Start backend
         run: |
@@ -22,10 +22,11 @@ jobs:
 
       - name: Check for conflicts
         run: |
+          pip install sympy # dependency for planner agent
           curl http://localhost:8000/events | jq '.[] | select(.action=="intent")' > intents.json
           python scripts/check_conflicts.py intents.json
 
       - name: Run advanced tests
         run: |
           pip install -r backend/requirements.txt
-          pytest -q tests/jules/test_advanced.py
+          pytest -q tests/jules/test_advanced.py tests/jules/test_debug_event.py

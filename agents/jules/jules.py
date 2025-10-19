@@ -64,6 +64,16 @@ def open_pr_stub(branch, title):
     print("PR open event:", ev)
     return ev
 
+def emit_debug_event(failing_step, suggested_fix, reproducer_fixture):
+    payload = {
+        "failing_step": failing_step,
+        "suggested_fix": suggested_fix,
+        "reproducer_fixture": reproducer_fixture,
+    }
+    ev = post_event("debug", payload)
+    print("Debug event emitted:", ev)
+    return ev
+
 def main():
     print("Jules agent bootstrap starting")
     announce_intent(["agents/verifier_agent.py"], "agent/jules/bootstrap", "15m", "bootstrap pipeline test")
@@ -73,6 +83,14 @@ def main():
     print("Numeric trace:", trace)
     # emit verify event
     post_event("verify", {"claim_id": claim["claim_id"], "trace": trace})
+
+    if not trace.get("ok"):
+        emit_debug_event(
+            failing_step="run_sympy_check",
+            suggested_fix="The integral was less than the target. The parameters may need to be adjusted.",
+            reproducer_fixture=claim.get("fixtures", [])[0],
+        )
+
     # checkpoint
     checkpoint_artifact()
     # open PR stub
