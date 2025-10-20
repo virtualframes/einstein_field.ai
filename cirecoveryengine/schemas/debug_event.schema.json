@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Debug Event",
+  "description": "Schema for a debug event.",
+  "type": "object",
+  "properties": {
+    "event": {
+      "type": "string",
+      "const": "debug"
+    },
+    "agent": {
+      "type": "string",
+      "description": "The agent that emitted the event."
+    },
+    "job_name": {
+      "type": "string",
+      "description": "The name of the CI job that failed."
+    },
+    "failing_step": {
+      "type": "string",
+      "description": "The name of the step that failed."
+    },
+    "error_message": {
+      "type": "string",
+      "description": "The error message from the failed step."
+    },
+    "suggested_fix": {
+      "type": "string",
+      "description": "A suggested fix for the failure."
+    }
+  },
+  "required": ["event", "agent", "job_name", "failing_step", "error_message", "suggested_fix"]
+}

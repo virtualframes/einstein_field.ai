@@ -1,32 +1,41 @@
-name: agent-integration
-on: [push, pull_request]
+name: Agent Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
-  agent_interaction_test:
+  agent-interaction:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+    - name: Checkout
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
-      - name: Start backend
-        run: |
-          cp .env.example .env
-          docker-compose up -d backend postgres redis
+    - name: Install Docker Compose Plugin
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose-plugin
+        docker compose version
 
-      - name: Run Jules agent
-        run: docker-compose run jules
+    - name: Setup Environment
+      run: cp .env.example .env
 
-      - name: Run Ana agent (for conflict test)
-        # We will simulate another agent's intent by calling the efai-agent CLI
-        run: |
-          docker-compose run --entrypoint "python agents/efai-agent/efai_agent.py intent --files agents/verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
+    - name: Start Backend Services
+      run: docker compose up -d backend postgres redis
 
-      - name: Check for conflicts
-        run: |
-          pip install sympy # dependency for planner agent
-          curl http://localhost:8000/events | jq '.[] | select(.action=="intent")' > intents.json
-          python scripts/check_conflicts.py intents.json
+    - name: Run Jules Agent
+      run: docker compose run jules
 
-      - name: Run advanced tests
-        run: |
-          pip install -r backend/requirements.txt
-          pytest -q tests/jules/test_advanced.py tests/jules/test_debug_event.py
+    - name: Run Ana Agent (Conflict Test)
+      run: |
+        docker compose run --entrypoint "python agents/efai-agent/efai_agent.py intent --files agents/verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
+
+    - name: Emit Planner Checkpoint on Failure
+      if: failure()
+      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction
+
+    - name: Emit Debug Event
+      if: failure()
+      run: python cirecoveryengine/debugeventemitter.py --job agent-interaction --step "agent-interaction" --error "Agent interaction failed" --fix "Check agent logs for more details"

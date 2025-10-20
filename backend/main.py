@@ -67,6 +67,6 @@ def submit(doc: Dict[str, Any]):
         "claim_id": str(uuid.uuid4()),
         "canonical_text": doc.get("text", "")[:200],
         "stubsympy": "Integral(Phiconst, (t, ti, tf)) >= rho_infl * V6",
-        "fixtures": [{"Phiconst": 1e-5, "V6": 1e60, "rhoinfl": 1e-30, "ti": 1e-36, "tf": 1e-34}],
+        "fixtures": doc.get("fixtures", [{"Phiconst": 1e-5, "V6": 1e60, "rhoinfl": 1e-30, "ti": 1e-36, "tf": 1e-34}]),
     }
     return {"event_id": event_id, "claim": claim}

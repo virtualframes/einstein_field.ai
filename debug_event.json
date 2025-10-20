@@ -1,0 +1,8 @@
+{
+  "event": "debug",
+  "agent": "jules",
+  "jobname": "agent-interaction",
+  "failing_step": "Run Jules Agent",
+  "error_message": "Agent failed with timeout",
+  "suggested_fix": "Increase timeout in agent configuration"
+}

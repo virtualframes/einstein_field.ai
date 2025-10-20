@@ -1,0 +1,42 @@
+name: CI Recovery
+
+on:
+  workflow_run:
+    workflows: ["Agent Integration"]
+    types:
+      - completed
+
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+
+      - name: Download failure logs
+        uses: actions/download-artifact@v4
+        with:
+          name: logs
+          path: logs
+
+      - name: Emit Planner Checkpoint
+        id: planner_checkpoint
+        run: |
+          python cirecoveryengine/plannercheckpointemitter.py --job ${{ github.event.workflow_run.name }} --out planner_checkpoint.json
+          echo "checkpoint_path=planner_checkpoint.json" >> $GITHUB_OUTPUT
+
+      - name: Emit Debug Event
+        id: debug_event
+        run: |
+          # In a real scenario, you would parse the logs to get the actual error
+          python cirecoveryengine/debugeventemitter.py --job ${{ github.event.workflow_run.name }} --step "unknown" --error "See logs for details" --fix "See logs for details" --out debug_event.json
+          echo "event_path=debug_event.json" >> $GITHUB_OUTPUT
+
+      - name: Upload Recovery Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-artifacts
+          path: |
+            planner_checkpoint.json
+            debug_event.json
