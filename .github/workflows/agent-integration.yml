@@ -51,7 +51,7 @@ jobs:
 
     - name: Upload Logs on Failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@c9a7a1eccd8a963a0c38e8a1e0f2bba64a1a3d9e
       with:
         name: logs
         path: |

@@ -1,0 +1,16 @@
+name: Enforce SHA Pinning
+
+on: [push, pull_request]
+
+jobs:
+  validate-sha:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+
+      - name: Enforce SHA Pinning
+        uses: ihs7/action-sha-pinned-actions@e805c42c9e2c7deb3f339079c143507c28df129f
+        with:
+          workflows-path: .github
+          fail-on-violation: true

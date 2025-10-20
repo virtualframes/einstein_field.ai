@@ -18,3 +18,14 @@ Notes
 - This plan is canonical and must be updated before execution.
 - Jules must revise and optimize this file before any commit.
 - Planning Mode is allowed only for scoped subtasks.
+
+CI Governance: SHA Pinning Enforcement
+
+Jules enforces full SHA pinning across all workflows using:
+
+- GitHub Actions policy enforcement (Settings > Actions > Require SHA pinning)
+- CI validator workflow (validate-sha.yml) using action-sha-pinned-actions
+- Dependabot for weekly SHA updates
+- Immutable release pinning for trusted actions
+
+All agents must inherit this policy. Violations trigger CI failure.

@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
       - name: Download failure logs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: logs
           path: logs
@@ -34,7 +34,7 @@ jobs:
           echo "event_path=debug_event.json" >> $GITHUB_OUTPUT
 
       - name: Upload Recovery Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@c9a7a1eccd8a963a0c38e8a1e0f2bba64a1a3d9e
         with:
           name: recovery-artifacts
           path: |
