@@ -23,7 +23,13 @@ def test_debug_event_emission():
     # Set the BACKEND_URL so the agent can connect to the test server
     env = os.environ.copy()
     env["BACKEND_URL"] = BASE
-    process = subprocess.run(["python", "agents/jules/jules.py"], capture_output=True, text=True, env=env)
+    process = subprocess.run(
+        ["python", "agents/jules/jules.py"],
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=os.getcwd()  # Ensure the agent runs in the project root
+    )
 
     # Check stdout/stderr for debugging if the test fails
     print("Jules stdout:", process.stdout)

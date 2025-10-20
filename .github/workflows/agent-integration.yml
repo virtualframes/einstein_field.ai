@@ -48,3 +48,12 @@ jobs:
     - name: Emit Debug Event
       if: failure()
       run: python cirecoveryengine/debugeventemitter.py --job agent-interaction --step "agent-interaction" --error "Agent interaction failed" --fix "Check agent logs for more details"
+
+    - name: Upload Logs on Failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: logs
+        path: |
+          *.log
+          *.txt

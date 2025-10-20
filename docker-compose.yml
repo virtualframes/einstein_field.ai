@@ -34,7 +34,7 @@ services:
       - backend
     volumes:
       - ./agents:/agents
-    command: ["python", "jules.py"]
+    command: ["python", "jules/jules.py"]
 
 volumes:
   pgdata:
