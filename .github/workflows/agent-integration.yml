@@ -32,7 +32,7 @@ jobs:
       run: docker compose run jules
 
     - name: Emit Planner Checkpoint
-      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction --out planner_checkpoint.json
+      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction --out planner_checkpoint.json --emit-checkpoint
 
     - name: Run Ana Agent (Conflict Test)
       run: |
@@ -51,7 +51,7 @@ jobs:
 
     - name: Upload Logs on Failure
       if: failure()
-      uses: actions/upload-artifact@c9a7a1eccd8a963a0c38e8a1e0f2bba64a1a3d9e
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: logs
         path: |
