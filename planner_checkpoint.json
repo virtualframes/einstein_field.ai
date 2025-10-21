@@ -1,0 +1,9 @@
+{
+  "planner_checkpoint_id": "pc:v1:autogen",
+  "compression_method": "SAC",
+  "compression_ratio": 8.0,
+  "compressed_trace": "<base64-vec-stub>",
+  "retrieval_ids": [],
+  "hydration_hint": "hydrate_symbols:Phi_bulk",
+  "provenance_id": "prov:autogen"
+}

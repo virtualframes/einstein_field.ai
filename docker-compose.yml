@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: efai
+      POSTGRES_USER: efai
+      POSTGRES_PASSWORD: efai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  jules:
+    build: ./agents/jules
+    env_file: .env
+    depends_on:
+      - backend
+    volumes:
+      - ./agents:/agents
+    command: ["python", "jules/jules.py"]
+
+volumes:
+  pgdata:

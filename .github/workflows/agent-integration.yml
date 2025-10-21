@@ -1,0 +1,61 @@
+name: Agent Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  agent-interaction:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+
+    - name: Install Docker Compose Plugin
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose-plugin || sudo apt-get install -y docker-compose
+        docker compose version
+
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
+
+    - name: Setup Environment
+      run: |
+        cp .env.example .env
+        sed -i 's/localhost/backend/g' .env
+
+    - name: Start Backend Services
+      run: docker compose up -d backend postgres redis
+
+    - name: Run Jules Agent
+      run: docker compose run jules
+
+    - name: Emit Planner Checkpoint
+      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction --out planner_checkpoint.json --emit-checkpoint
+
+    - name: Run Ana Agent (Conflict Test)
+      run: |
+        docker compose run --entrypoint "python efai-agent/efai_agent.py intent --files verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
+
+    - name: Validate Plan Execution
+      run: python cirecoveryengine/validator.py --trace-checkpoint planner_checkpoint.json
+
+    - name: Emit Planner Checkpoint on Failure
+      if: failure()
+      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction
+
+    - name: Emit Debug Event
+      if: failure()
+      run: python cirecoveryengine/debugeventemitter.py --job agent-interaction --step "agent-interaction" --error "Agent interaction failed" --fix "Check agent logs for more details"
+
+    - name: Upload Logs on Failure
+      if: failure()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: logs
+        path: |
+          *.log
+          *.txt

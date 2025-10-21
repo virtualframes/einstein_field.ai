@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Planner Checkpoint",
+  "description": "Schema for a planner checkpoint.",
+  "type": "object",
+  "properties": {
+    "planner_checkpoint_id": {
+      "type": "string",
+      "description": "A unique identifier for the planner checkpoint."
+    },
+    "compression_method": {
+      "type": "string",
+      "description": "The method used to compress the trace."
+    },
+    "compression_ratio": {
+      "type": "number",
+      "description": "The ratio of the compressed trace to the original."
+    },
+    "compressed_trace": {
+      "type": "string",
+      "description": "The compressed trace data."
+    },
+    "retrieval_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A list of retrieval IDs for related information."
+    },
+    "hydration_hint": {
+      "type": "string",
+      "description": "A hint for how to hydrate the compressed trace."
+    },
+    "provenance_id": {
+      "type": "string",
+      "description": "The ID of the provenance information for this checkpoint."
+    }
+  },
+  "required": [
+    "planner_checkpoint_id",
+    "compression_method",
+    "compressed_trace",
+    "provenance_id"
+  ]
+}
