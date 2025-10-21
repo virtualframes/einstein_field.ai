@@ -6,6 +6,7 @@ Replace OPENAI placeholder later.
 import os, time, json, requests, hmac, hashlib, uuid
 from sympy import symbols, Integral
 from sympy import simplify
+from pathlib import Path
 
 BACKEND = os.environ.get("BACKEND_URL", "http://backend:8000")
 AGENT_ID = "agent:jules"
@@ -21,16 +22,24 @@ def post_event(action: str, payload: dict):
     r.raise_for_status()
     return r.json()
 
-def announce_intent(files, branch, eta="30m", summary="bootstrap verifier"):
-    payload = {"files": files, "branch": branch, "eta": eta, "summary": summary}
-    ev = post_event("intent", payload)
-    print("Intent announced:", ev)
-    return ev
-
-def submit_text(text):
-    r = requests.post(f"{BACKEND}/submit", json={"text": text})
+def get_latest_submission():
+    """Fetches the latest submission event from the backend."""
+    url = f"{BACKEND}/events?limit=100"
+    r = requests.get(url)
     r.raise_for_status()
-    return r.json()["claim"]
+    events = r.json()
+    for event in events:
+        if event["action"] == "submission":
+            # Reconstruct the claim from the payload
+            doc = event["payload"]
+            claim = {
+                "claim_id": str(uuid.uuid4()), # The original claim_id is not in the event
+                "canonical_text": doc.get("text", "")[:200],
+                "stubsympy": "Integral(Phiconst, (t, ti, tf)) >= rho_infl * V6",
+                "fixtures": doc.get("fixtures", [{"Phiconst": 1e-5, "V6": 1e60, "rhoinfl": 1e-30, "ti": 1e-36, "tf": 1e-34}]),
+            }
+            return claim
+    return None
 
 def run_sympy_check(claim):
     # parse the stub and run a numeric check on the fixture
@@ -74,10 +83,39 @@ def emit_debug_event(failing_step, suggested_fix, reproducer_fixture):
     print("Debug event emitted:", ev)
     return ev
 
+def execute_plan_tasks(plan_path="agents/jules/PLAN.md"):
+    p = Path(plan_path)
+    if not p.exists():
+        print(f"Plan file not found at {plan_path}. Skipping task execution.")
+        return
+
+    lines = p.read_text().splitlines()
+    for line in lines:
+        if line.strip().startswith("- [ ]"):
+            task = line.split("]")[1].strip()
+            print(f"Executing task from plan: {task}")
+            # Here you would add the logic to actually execute the task.
+            # For now, we will just print a message.
+            if "Scaffold TypeScript interfaces" in task:
+                print("  -> (Placeholder) Scaffolding TypeScript interfaces...")
+            elif "Validate schema" in task:
+                print("  -> (Placeholder) Validating schema...")
+            elif "Write unit tests" in task:
+                print("  -> (Placeholder) Writing unit tests...")
+
+
 def main():
     print("Jules agent bootstrap starting")
-    announce_intent(["agents/verifier_agent.py"], "agent/jules/bootstrap", "15m", "bootstrap pipeline test")
-    claim = submit_text("Inflation is driven by bulk energy from D7 and D8 dimensions.")
+
+    # Read and execute tasks from the PLAN.md file
+    execute_plan_tasks()
+
+    # Fetch the latest submission instead of creating a new one
+    claim = get_latest_submission()
+    if not claim:
+        print("No submission found. Exiting.")
+        return
+
     print("Claim received:", claim)
     trace = run_sympy_check(claim)
     print("Numeric trace:", trace)

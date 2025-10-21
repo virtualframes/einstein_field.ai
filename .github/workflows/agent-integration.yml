@@ -38,7 +38,7 @@ jobs:
 
     - name: Run Ana Agent (Conflict Test)
       run: |
-        docker compose run --entrypoint "python agents/efai-agent/efai_agent.py intent --files agents/verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
+        docker compose run --entrypoint "python efai-agent/efai_agent.py intent --files verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
 
     - name: Validate Plan Execution
       run: python cirecoveryengine/validator.py --trace-checkpoint planner_checkpoint.json
