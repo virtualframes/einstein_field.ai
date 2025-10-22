@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${ALLOW_UNPINNED_ACTIONS:-0}" == "1" ]]; then
+  exit 0
+fi
+
+unpins=$(git diff --cached --name-only --diff-filter=ACM | xargs -r -- grep -nE "uses: .*/.*@" | grep -vE "@[a-f0-9]{40}$" || true)
+if [[ -n "$unpins" ]]; then
+  echo "Commit aborted: Found unpinned GitHub Action references in staged files:"
+  echo "$unpins"
+  echo "Set ALLOW_UNPINNED_ACTIONS=1 to bypass or pin the actions to full SHAs."
+  exit 1
+fi
