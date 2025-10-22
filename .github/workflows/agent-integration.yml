@@ -1,56 +1,67 @@
+---
 name: Agent Integration
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   agent-interaction:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Setup Environment
-      run: cp .env.example .env
+      - name: Setup Environment
+        run: cp .env.example .env
 
-    - name: Start Backend Services (retry)
-      run: |
-        set -euo pipefail
-        for i in 1 2 3; do
-          docker compose up --build -d backend postgres redis && break || sleep $((i*10))
-        done
+      - name of: Start Backend Services (retry)
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            docker compose up --build -d backend postgres redis && break || sleep $((i*10))
+          done
 
-    - name: Run Jules Agent
-      run: docker compose run jules
+      - name: Run Jules Agent
+        run: docker compose run jules
 
-    - name: Run Ana Agent (Conflict Test)
-      run: |
-        docker compose run --entrypoint "python agents/efai-agent/efaiagent.py intent --files agents/verifieragent.py --branch agent/ana/test --summary 'Ana testing'" jules
+      - name: Run Ana Agent (Conflict Test)
+        run: >
+          docker compose run --entrypoint
+          "python agents/efai-agent/efaiagent.py intent
+          --files agents/verifieragent.py
+          --branch agent/ana/test
+          --summary 'Ana testing'" jules
 
-    - name: Emit Planner Checkpoint on Failure
-      if: failure()
-      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction --out planner_checkpoint.json
+      - name: Emit Planner Checkpoint on Failure
+        if: failure()
+        run: >
+          python cirecoveryengine/plannercheckpointemitter.py
+          --job agent-interaction --out planner_checkpoint.json
 
-    - name: Emit Debug Event
-      if: failure()
-      run: python cirecoveryengine/debugeventemitter.py --job agent-interaction --out debug_event.json
+      - name: Emit Debug Event
+        if: failure()
+        run: >
+          python cirecoveryengine/debugeventemitter.py
+          --job agent-interaction --out debug_event.json
 
-    - name: Upload artifacts on failure
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: ci-diagnostics
-        path: |
-          planner_checkpoint.json
-          debug_event.json
-          docker-pull-logs.txt
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ci-diagnostics
+          path: |
+            planner_checkpoint.json
+            debug_event.json
+            docker-pull-logs.txt
