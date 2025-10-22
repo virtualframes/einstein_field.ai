@@ -1,0 +1,38 @@
+name: Docker Pull Diagnostic Action
+
+on: workflow_dispatch
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Login (optional)
+      if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Capture docker info and attempt pull
+      run: |
+        set -euo pipefail
+        docker info > docker-info.txt 2>&1 || true
+        echo "Attempting sample pulls" > docker-pull-logs.txt
+        # list of images used by compose (update if compose file changes)
+        IMAGES=("ghcr.io/yourorg/backend:latest" "postgres:15" "redis:7")
+        for img in "${IMAGES[@]}"; do
+          echo "Pulling $img" >> docker-pull-logs.txt
+          docker pull "$img" >> docker-pull-logs.txt 2>&1 || true
+        done
+        cat docker-info.txt >> docker-pull-logs.txt || true
+
+    - name: Upload diagnostic artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-diagnostics
+        path: |
+          docker-info.txt
+          docker-pull-logs.txt
