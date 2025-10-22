@@ -36,14 +36,5 @@ services:
       - ./agents:/agents
     command: ["python", "jules/jules.py"]
 
-  syncthing:
-    image: lscr.io/linuxserver/syncthing
-    ports:
-      - "22000:22000"
-      - "8384:8384"
-    volumes:
-      - ./config:/config
-      - ./data:/data
-
 volumes:
   pgdata:
