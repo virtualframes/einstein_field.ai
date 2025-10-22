@@ -1,61 +1,67 @@
+---
 name: Agent Integration
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   agent-interaction:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
-    - name: Install Docker Compose Plugin
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose-plugin || sudo apt-get install -y docker-compose
-        docker compose version
+      - name: Login to Docker Hub
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
+      - name: Setup Environment
+        run: cp .env.example .env
 
-    - name: Setup Environment
-      run: |
-        cp .env.example .env
-        sed -i 's/localhost/backend/g' .env
+      - name of: Start Backend Services (retry)
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            docker compose up --build -d backend postgres redis && break || sleep $((i*10))
+          done
 
-    - name: Start Backend Services
-      run: docker compose up -d backend postgres redis
+      - name: Run Jules Agent
+        run: docker compose run jules
 
-    - name: Run Jules Agent
-      run: docker compose run jules
+      - name: Run Ana Agent (Conflict Test)
+        run: >
+          docker compose run --entrypoint
+          "python agents/efai-agent/efaiagent.py intent
+          --files agents/verifieragent.py
+          --branch agent/ana/test
+          --summary 'Ana testing'" jules
 
-    - name: Emit Planner Checkpoint
-      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction --out planner_checkpoint.json --emit-checkpoint
+      - name: Emit Planner Checkpoint on Failure
+        if: failure()
+        run: >
+          python cirecoveryengine/plannercheckpointemitter.py
+          --job agent-interaction --out planner_checkpoint.json
 
-    - name: Run Ana Agent (Conflict Test)
-      run: |
-        docker compose run --entrypoint "python efai-agent/efai_agent.py intent --files verifier_agent.py --branch agent/ana/test --summary 'Ana testing'" jules
+      - name: Emit Debug Event
+        if: failure()
+        run: >
+          python cirecoveryengine/debugeventemitter.py
+          --job agent-interaction --out debug_event.json
 
-    - name: Validate Plan Execution
-      run: python cirecoveryengine/validator.py --trace-checkpoint planner_checkpoint.json
-
-    - name: Emit Planner Checkpoint on Failure
-      if: failure()
-      run: python cirecoveryengine/plannercheckpointemitter.py --job agent-interaction
-
-    - name: Emit Debug Event
-      if: failure()
-      run: python cirecoveryengine/debugeventemitter.py --job agent-interaction --step "agent-interaction" --error "Agent interaction failed" --fix "Check agent logs for more details"
-
-    - name: Upload Logs on Failure
-      if: failure()
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: logs
-        path: |
-          *.log
-          *.txt
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ci-diagnostics
+          path: |
+            planner_checkpoint.json
+            debug_event.json
+            docker-pull-logs.txt

@@ -1,0 +1,9 @@
+{
+  "trace": [
+    {
+      "task": "Do something",
+      "status": "skipped-stub",
+      "seed": 42
+    }
+  ]
+}
