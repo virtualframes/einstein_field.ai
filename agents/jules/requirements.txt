@@ -3,3 +3,4 @@ sympy
 python-dotenv
 requests
 cryptography
+structlog
