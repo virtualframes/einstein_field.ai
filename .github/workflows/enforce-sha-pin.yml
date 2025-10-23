@@ -1,0 +1,17 @@
+name: Enforce SHA Pinning
+on: [pull_request, push]
+jobs:
+  enforce-sha:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - name: Check for YAML uses without SHA
+        run: |
+          VIOLATIONS=$(grep -RIn --exclude-dir=.git -E '^[:space:]?uses:[[:space:]]*[^@[:space:]]+@[^[:space:]]+' .github/workflows 2>/dev/null || true)
+          VIOLATIONS=$(printf '%s\n' "$VIOLATIONS" | grep -v -E "@[0-9a-f]{40}" || true)
+          if [ -n "$VIOLATIONS" ]; then
+            echo "Found unpinned actions:"
+            printf '%s\n' "$VIOLATIONS"
+            exit 1
+          fi

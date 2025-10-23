@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Fast local check: only match YAML 'uses:' keys (optionally prefixed by '- ')
+VIOLATIONS=$(grep -RIn --exclude-dir=.git -E '^[:space:]*uses:[[:space:]]*[^@[:space:]]+@[^[:space:]]+' .github/workflows 2>/dev/null || true)
+
+# exclude already-pinned (40 hex) refs
+VIOLATIONS=$(printf '%s\n' "$VIOLATIONS" | grep -v -E "@[0-9a-f]{40}" || true)
+if [ -n "$VIOLATIONS" ]; then
+  echo "ERROR: Found unpinned GitHub Actions in workflows:"
+  printf '%s\n' "$VIOLATIONS"
+  echo ""
+  echo "Run: scripts/pin-actions.sh --preview"
+  exit 1
+fi
+exit 0
