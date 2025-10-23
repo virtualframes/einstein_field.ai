@@ -18,7 +18,8 @@ services:
 
   backend:
     build: ./backend
-    env_file: .env
+    env_file:
+      - ./.env
     depends_on:
       - postgres
       - redis
@@ -29,7 +30,8 @@ services:
 
   jules:
     build: ./agents/jules
-    env_file: .env
+    env_file:
+      - ./.env
     depends_on:
       - backend
     volumes:
