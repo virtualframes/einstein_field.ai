@@ -1,0 +1,14 @@
+name: Enforce SHA Pinning
+
+on: [push, pull_request]
+
+jobs:
+  enforce-sha-pin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5
+
+      - name: Enforce SHA Pinning
+        run: |
+          find .github/workflows -type f -name "*.yml" -exec grep -Hn "uses: " {} + | grep -v -E "@[0-9a-f]{40}" && exit 1 || exit 0
