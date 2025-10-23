@@ -1,0 +1,15 @@
+name: Scheduled Action Pin Refresh
+on:
+  schedule:
+    - cron: '0 2 * * 1' # weekly
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - name: Run pin preview
+        run: |
+          ./scripts/pin-actions.sh --preview
+      - name: Create PR if changes
+        run: |
+          ./scripts/pin-actions.sh --apply || true

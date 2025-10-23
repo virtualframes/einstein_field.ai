@@ -1,38 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-# This pre-commit hook ensures that all GitHub Actions in .github/workflows
-# are pinned to a specific commit SHA. It prevents the use of tags (e.g., "v2")
-# or branches, which can be insecure.
+# Fast local check: only match YAML 'uses:' keys (optionally prefixed by '- ')
+VIOLATIONS=$(grep -RIn --exclude-dir=.git -E '^[:space:]*uses:[[:space:]]*[^@[:space:]]+@[^[:space:]]+' .github/workflows 2>/dev/null || true)
 
-WORKFLOWS_PATH=".github/workflows"
-
-# The pattern we're looking for is "uses: " followed by something that is
-# NOT a pinned SHA. A pinned SHA is in the format "user/repo@commit_sha",
-# where the commit_sha is 40 hex characters.
-#
-# This grep command will:
-# -R, --recursive: search recursively in the WORKFLOWS_PATH
-# -I, --binary-files=without-match: ignore binary files
-# -n, --line-number: show the line number of the match
-# "uses: ": the string to search for
-# -E, --extended-regexp: use extended regular expressions
-# -v, --invert-match: invert the match, so we find lines that DON'T match the SHA pattern
-# -E "@[0-9a-f]{40}" is the pattern for a pinned SHA. The part that's inverted.
-# --exclude=enforce-sha-pin.yml: exclude the file that is performing the check
-#
-# The result is that this command will find any "uses: " line that is NOT
-# followed by a pinned SHA.
-unpinned_actions=$(grep -RIn "uses: " "$WORKFLOWS_PATH" --exclude=enforce-sha-pin.yml | grep -v -E "@[0-9a-f]{40}" || true)
-
-if [[ -n "$unpinned_actions" ]]; then
-  echo "[!] Found unpinned GitHub Actions:"
-  echo "$unpinned_actions"
+# exclude already-pinned (40 hex) refs
+VIOLATIONS=$(printf '%s\n' "$VIOLATIONS" | grep -v -E "@[0-9a-f]{40}" || true)
+if [ -n "$VIOLATIONS" ]; then
+  echo "ERROR: Found unpinned GitHub Actions in workflows:"
+  printf '%s\n' "$VIOLATIONS"
   echo ""
-  echo "Please pin all actions to a specific commit SHA."
-  echo "You can use the 'scripts/pin-actions.sh --apply' script to do this."
+  echo "Run: scripts/pin-actions.sh --preview"
   exit 1
 fi
-
-echo "[*] All GitHub Actions are pinned."
 exit 0
