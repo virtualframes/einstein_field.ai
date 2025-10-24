@@ -1,0 +1,3 @@
+-r agents/jules/requirements.txt
+numpy==1.26.4
+vcrpy==7.0.0

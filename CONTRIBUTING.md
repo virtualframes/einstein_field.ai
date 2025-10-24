@@ -31,3 +31,19 @@ You can use the `scripts/pin-actions.sh` script to help with this process.
 ### Pre-commit Hook
 
 There is a pre-commit hook that will prevent you from committing any unpinned actions. If you see an error message about unpinned actions, please run the `pin-actions.sh` script to fix the issue.
+
+## Notebook Commit Policy
+
+When committing changes to a notebook, you must also update the corresponding `.audit.json` file. The pre-commit hook will check for this and will prevent you from committing if the audit file is not updated.
+
+If you need to skip the audit for a specific commit, you can add the following tag to your commit message body:
+
+```
+NB-AUDIT-SKIP: <reason>
+```
+
+Replace `<reason>` with a brief explanation of why you are skipping the audit.
+
+## Provenance Artifacts
+
+For manual reviewer attestation, you can create and sign a provenance artifact using the `jules` CLI. This will be implemented in a future version.

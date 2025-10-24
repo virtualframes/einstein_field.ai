@@ -1,0 +1,20 @@
+name: Citation Sync
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Run weekly
+
+jobs:
+  sync-citations:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r agents/jules/requirements.txt
+      - name: Sync citations
+        run: python agents/jules/cli.py sync-zotero --api-key ${{ secrets.ZOTERO_API_KEY }} --user ${{ secrets.ZOTERO_USER_ID }} --collections "My Library"
