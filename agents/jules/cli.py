@@ -1,9 +1,9 @@
 import argparse
 import json
 import sys
-from agents.jules.validator import validate_notebook
-from agents.jules.zotero_sync import sync as sync_zotero_main
-from agents.jules.agents.tools import summarize_documents as summarize_documents_main
+from .validator import validate_notebook
+from .zotero_sync import sync as sync_zotero_main
+from .agents.tools import summarize_documents as summarize_documents_main
 
 def validate(args):
     """Validate a notebook."""

@@ -22,3 +22,15 @@ To reproduce a provenance run, use the `jules reproduce` command with the proven
 ```bash
 jules reproduce <provenance_id> --output-dir /tmp/replay
 ```
+
+## CLI Examples
+
+### Validate a notebook
+```bash
+python -m agents.jules.cli validate notebooks/research/example_reproducible.ipynb
+```
+
+### Summarize a document
+```bash
+python -m agents.jules.cli summarize --docs README.md --prompt "Summarize this document."
+```

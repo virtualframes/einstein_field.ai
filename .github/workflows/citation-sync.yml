@@ -15,6 +15,6 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install -r agents/jules/requirements.txt
+        run: pip install -e .
       - name: Sync citations
-        run: python agents/jules/cli.py sync-zotero --api-key ${{ secrets.ZOTERO_API_KEY }} --user ${{ secrets.ZOTERO_USER_ID }} --collections "My Library"
+        run: python -m agents.jules.cli sync-zotero --api-key ${{ secrets.ZOTERO_API_KEY }} --user ${{ secrets.ZOTERO_USER_ID }} --collections "My Library"

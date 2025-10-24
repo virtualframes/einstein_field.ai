@@ -1,0 +1,61 @@
+interactions:
+- request:
+    body: '{"model":"r1","messages":[{"role":"system","content":"You are a helpful
+      assistant."},{"role":"user","content":"Summarize the following text in 10 tokens:
+      This is a test."}]}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate, zstd
+      authorization:
+      - Bearer dummy_key
+      connection:
+      - keep-alive
+      content-length:
+      - '173'
+      content-type:
+      - application/json
+      host:
+      - api.deepseek.com
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://api.deepseek.com/v1/chat/completions
+  response:
+    body:
+      string: '{"error":{"message":"Authentication Fails, Your api key: ****_key is
+        invalid","type":"authentication_error","param":null,"code":"invalid_request_error"}}'
+    headers:
+      CF-RAY:
+      - 993572aa3d41615e-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '153'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 24 Oct 2025 00:44:49 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=Zf8faU09Ua.BGQiGMSguT.DalEFn8ACTcsZ8ffC0ylI-1761266689-1.0.1.1-nxnFMS.XDgyKwHqOfeC3IasifDWDnV1ZSe9tQpJ7f0tJFtR8Q7GjfiJaNuaC1uAqbVJiZmGdPsBtTcDY8fHmYkKZwE_JsTa7_5sOCk_gLLw;
+        path=/; expires=Fri, 24-Oct-25 01:14:49 GMT; domain=.deepseek.com; HttpOnly;
+        Secure; SameSite=None
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      access-control-allow-credentials:
+      - 'true'
+      cf-cache-status:
+      - DYNAMIC
+      vary:
+      - origin, access-control-request-method, access-control-request-headers
+      x-ds-trace-id:
+      - b0b05d885a1afcca372565db24d94b4e
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

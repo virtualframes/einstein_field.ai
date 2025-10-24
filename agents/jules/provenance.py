@@ -1,6 +1,15 @@
 import json
 import hashlib
 from datetime import datetime, timezone
+import os
+import subprocess
+
+def get_git_sha():
+    """Gets the current git SHA."""
+    try:
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
+    except Exception:
+        return None
 
 def record_execution(target: str, actor: str, inputs: dict, outputs: dict, metadata: dict) -> str:
     """Creates a signed provenance JSON and returns provenance_id (SHA256 of canonical JSON)."""
@@ -10,7 +19,11 @@ def record_execution(target: str, actor: str, inputs: dict, outputs: dict, metad
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "inputs": inputs,
         "outputs": outputs,
-        "metadata": metadata,
+        "metadata": {
+            **metadata,
+            "git_sha": get_git_sha(),
+            "workflow_id": os.environ.get("GITHUB_RUN_ID"),
+        },
         "signatures": []
     }
     canonical_json = json.dumps(provenance, sort_keys=True, indent=2)
@@ -35,3 +48,15 @@ def verify_provenance(provenance_json: dict) -> bool:
     """Verifies a provenance JSON."""
     # This will be implemented later
     return True
+
+def emit_deepseek_provenance(run_id: str, call_meta: dict):
+    """Emits a provenance record for a DeepSeek API call."""
+    provenance_id = record_execution(
+        target="deepseek_api",
+        actor="jules-deepseek-agent",
+        inputs={"run_id": run_id},
+        outputs=call_meta,
+        metadata={}
+    )
+    with open(f"agents/provenance/deepseek/{run_id}.prov.json", "w") as f:
+        json.dump(load_provenance(provenance_id), f, sort_keys=True, indent=2)

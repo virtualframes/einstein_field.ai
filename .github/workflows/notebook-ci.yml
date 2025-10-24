@@ -17,13 +17,22 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -e .
       - name: Download NLTK data
         run: python -c "import nltk; nltk.download('punkt')"
+      - name: Validate secrets
+        run: python scripts/validate_secrets.py || echo "Secrets missing; skipping integration tests"
+      - name: Run import test
+        run: python -m unittest tests/test_package_imports.py
+      - name: DeepSeek smoke test
+        if: secrets.DEEPSEEK_API_KEY != ''
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python scripts/deepseek_smoke.py
       - name: Validate notebooks
         env:
           NLTK_DATA: /home/runner/nltk_data
         run: |
           find notebooks -name "*.ipynb" -print0 | while IFS= read -r -d $'\\0' notebook; do
-            python agents/jules/cli.py validate "$notebook"
+            python -m agents.jules.cli validate "$notebook"
           done

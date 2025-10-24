@@ -47,3 +47,12 @@ Replace `<reason>` with a brief explanation of why you are skipping the audit.
 ## Provenance Artifacts
 
 For manual reviewer attestation, you can create and sign a provenance artifact using the `jules` CLI. This will be implemented in a future version.
+
+## Pull Request Checklist
+
+Before submitting a pull request, please ensure that you have completed the following:
+
+- [ ] All tests pass.
+- [ ] The `scripts/validate-workflow-pins.sh` script has been run and has passed.
+- [ ] All secrets have been validated.
+- [ ] Provenance has been emitted for all external calls.
