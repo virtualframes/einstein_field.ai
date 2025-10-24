@@ -8,9 +8,19 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
+import nltk
+from datetime import datetime, timezone
 
 # Configure structured logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Ensure NLTK 'punkt' tokenizer is available
+punkt_downloaded_timestamp = None
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+    punkt_downloaded_timestamp = datetime.now(timezone.utc).isoformat()
 
 def summarize_documents(query: str, docs: List[str], provenance_hint: dict) -> Dict:
     """
@@ -47,12 +57,20 @@ def summarize_documents(query: str, docs: List[str], provenance_hint: dict) -> D
         }
     ]
 
+    provenance_metadata = {}
+    if punkt_downloaded_timestamp:
+        provenance_metadata["nltk_tokenizer"] = {
+            "resource": "punkt",
+            "downloaded": True,
+            "timestamp": punkt_downloaded_timestamp
+        }
+
     provenance_id = record_execution(
         target="summarize_documents",
         actor="jules-langchain-agent",
         inputs={"query": query, "docs": docs, "provenance_hint": provenance_hint},
         outputs={"result": result, "grounding": grounding},
-        metadata={}
+        metadata=provenance_metadata
     )
 
     logging.info(f"Summarization complete. Provenance ID: {provenance_id}")

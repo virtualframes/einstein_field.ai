@@ -10,6 +10,8 @@ To use the DeepSeek agent, you must first add your DeepSeek API key to the envir
 export DEEPSEEK_API_KEY=<your_api_key>
 ```
 
+This project also uses NLTK’s punkt tokenizer. Ensure it’s downloaded via `python -m nltk.downloader punkt` or included in CI workflows.
+
 ## How to Run
 
 You can run the DeepSeek agent using the `jules` CLI.

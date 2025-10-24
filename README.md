@@ -16,6 +16,8 @@ Run the container:
 docker run --rm -v $PWD:/work einsteinfield/repro:latest jules validate notebooks/research/example_reproducible.ipynb
 ```
 
+This project also uses NLTK’s punkt tokenizer. Ensure it’s downloaded via `python -m nltk.downloader punkt` or included in CI workflows.
+
 ## Reproducing a Provenance Run
 
 To reproduce a provenance run, use the `jules reproduce` command with the provenance ID:

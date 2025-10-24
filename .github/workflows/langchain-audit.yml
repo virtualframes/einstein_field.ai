@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: pip install -e .[dev]
       - name: Download NLTK data
-        run: python -c "import nltk; nltk.download('punkt')"
+        run: python -m nltk.downloader punkt
       - name: Run LangChain audit
         env:
           NLTK_DATA: /home/runner/nltk_data
