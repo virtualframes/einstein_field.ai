@@ -1,0 +1,18 @@
+#!/bin/bash
+# Pre-commit hook to validate notebooks
+
+echo "Running pre-commit notebook check..."
+
+# Get the list of modified notebook files
+MODIFIED_NOTEBOOKS=$(git diff --cached --name-only | grep ".ipynb")
+
+for notebook in $MODIFIED_NOTEBOOKS; do
+    echo "Validating $notebook..."
+    python agents/jules/cli.py validate "$notebook"
+    if [ $? -ne 0 ]; then
+        echo "Validation failed for $notebook"
+        exit 1
+    fi
+done
+
+exit 0

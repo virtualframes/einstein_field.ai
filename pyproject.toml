@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "einsteinfield-ai"
+version = "0.1.0"
+description = "einsteinfield.ai — local-first research orchestrator"
+authors = [{name = "Diego Cortes Hernandez", email = "you@example.com"}]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "httpx",
+  "sympy",
+  "python-dotenv",
+  "requests==2.32.5",
+  "cryptography",
+  "nbclient==0.10.2",
+  "nbformat==5.10.4",
+  "networkx==3.5",
+  "langchain==1.0.2",
+  "python-dateutil==2.9.0.post0",
+  "habanero",
+  "ipykernel==7.0.1",
+  "pyzotero==1.7.3",
+  "urllib3==2.5.0",
+  "sumy==0.11.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "black",
+  "ruff",
+  "isort",
+  "numpy==1.26.4",
+  "vcrpy==7.0.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["agents*"]
