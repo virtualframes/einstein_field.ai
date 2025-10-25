@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: pip install -e .[dev]
       - name: Download NLTK data
-        run: python -m nltk.downloader punkt
+        run: python -c "import nltk; nltk.download('punkt', download_dir='./nltk_data')"
       - name: Validate secrets
         run: python scripts/validate_secrets.py || echo "Secrets missing; skipping integration tests"
       - name: Run import test
@@ -31,7 +31,7 @@ jobs:
         run: python scripts/deepseek_smoke.py
       - name: Validate notebooks
         env:
-          NLTK_DATA: /home/runner/nltk_data
+          NLTK_DATA: ./nltk_data
         run: |
           find notebooks -name "*.ipynb" -print0 | while IFS= read -r -d $'\\0' notebook; do
             python -m agents.jules.cli validate "$notebook"
