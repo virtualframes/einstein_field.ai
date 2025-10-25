@@ -1,0 +1,18 @@
+{
+  "actor": "jules-validator",
+  "id": "13a9ee17ce6d4d39293c3f8b9c25caf12d6624f885871b3a139eec3f9ed00877",
+  "inputs": {
+    "baseline_path": null,
+    "env_spec": null
+  },
+  "metadata": {
+    "git_sha": "a57b8e35b566002dcb0929cfa0eb4bc56e369270",
+    "workflow_id": null
+  },
+  "outputs": {
+    "outputs_hash": "8097542f90aad67d9fe711c3be00e202c290d4a3698ccc77af14ac720d52f9f4"
+  },
+  "signatures": [],
+  "target": "/app/agents/jules/tests/test_notebook.ipynb",
+  "timestamp": "2025-10-24T03:14:12.658440+00:00"
+}

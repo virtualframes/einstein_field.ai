@@ -1,0 +1,18 @@
+{
+  "actor": "jules-langchain-agent",
+  "id": "d392e6d416f760ebbb47a30f970142a86eb082d80991d92afdd3fd13a3ce0da9",
+  "inputs": {
+    "citation_raw": "10.1126/science.169.3946.635"
+  },
+  "metadata": {
+    "git_sha": "f123f587f7bf78e33501bfc0048ac5ee07cedfd9",
+    "workflow_id": null
+  },
+  "outputs": {
+    "grounding_score": 26.400534,
+    "normalized": "10.1126/science.169.3946.635"
+  },
+  "signatures": [],
+  "target": "verify_citation",
+  "timestamp": "2025-10-24T03:05:25.068884+00:00"
+}

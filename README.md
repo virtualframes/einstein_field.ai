@@ -1,5 +1,38 @@
 # EinsteinField.ai
 
-PR4: Harden CI, determinism, replay utilities, and Docker diagnostics.
+This project is a multi-agent coding system.
 
-See docs/pr4-readme.md for runbook.
+## Quickstart
+
+To run the example notebook locally, you can use the reproducible container.
+
+Build the container:
+```bash
+docker build --file Dockerfile.reproducible --tag einsteinfield/repro:latest
+```
+
+Run the container:
+```bash
+docker run --rm -v $PWD:/work einsteinfield/repro:latest jules validate notebooks/research/example_reproducible.ipynb
+```
+
+This project also uses NLTK’s punkt tokenizer. Ensure it’s downloaded via `python -m nltk.downloader punkt` or included in CI workflows.
+
+## Reproducing a Provenance Run
+
+To reproduce a provenance run, use the `jules reproduce` command with the provenance ID:
+```bash
+jules reproduce <provenance_id> --output-dir /tmp/replay
+```
+
+## CLI Examples
+
+### Validate a notebook
+```bash
+python -m agents.jules.cli validate notebooks/research/example_reproducible.ipynb
+```
+
+### Summarize a document
+```bash
+python -m agents.jules.cli summarize --docs README.md --prompt "Summarize this document."
+```
