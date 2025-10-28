@@ -7,6 +7,19 @@ import os, time, json, requests, hmac, hashlib, uuid
 from sympy import symbols, Integral
 from sympy import simplify
 from pathlib import Path
+import structlog
+
+# Configure structlog for JSON output
+structlog.configure(
+    processors=[
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.JSONRenderer(),
+    ],
+    logger_factory=structlog.PrintLoggerFactory(),
+)
+log = structlog.get_logger()
+
 
 BACKEND = os.environ.get("BACKEND_URL", "http://backend:8000")
 AGENT_ID = "agent:jules"
@@ -45,7 +58,7 @@ def run_sympy_check(claim):
     # parse the stub and run a numeric check on the fixture
     fixtures = claim.get("fixtures", [])
     if not fixtures:
-        print("No fixtures; skipping numeric test")
+        log.warning("jules.agent.sympy.no_fixtures")
         return {"ok": False, "reason": "no-fixtures"}
     f = fixtures[0]
     # numeric integral for constant Phi
@@ -64,13 +77,13 @@ def checkpoint_artifact(path="checkpoint.txt", contents="checkpoint from jules")
     # simple artifact: we will post a checkpoint event pointing to local path
     payload = {"artifact_path": path, "notes": "local checkpoint"}
     ev = post_event("checkpoint", payload)
-    print("Checkpoint event:", ev)
+    log.info("jules.agent.checkpoint.event", event_payload=ev)
     return ev
 
 def open_pr_stub(branch, title):
     payload = {"branch": branch, "title": title, "pr_url": f"https://github.com/virtualframes/einsteinfield.ai/pull/{uuid.uuid4()}"}
     ev = post_event("pr_open", payload)
-    print("PR open event:", ev)
+    log.info("jules.agent.pr.event", event_payload=ev)
     return ev
 
 def emit_debug_event(failing_step, suggested_fix, reproducer_fixture):
@@ -80,32 +93,32 @@ def emit_debug_event(failing_step, suggested_fix, reproducer_fixture):
         "reproducer_fixture": reproducer_fixture,
     }
     ev = post_event("debug", payload)
-    print("Debug event emitted:", ev)
+    log.info("jules.agent.debug.event", event_payload=ev)
     return ev
 
 def execute_plan_tasks(plan_path="agents/jules/PLAN.md"):
     p = Path(plan_path)
     if not p.exists():
-        print(f"Plan file not found at {plan_path}. Skipping task execution.")
+        log.warning("jules.agent.plan.not_found", path=plan_path)
         return
 
     lines = p.read_text().splitlines()
     for line in lines:
         if line.strip().startswith("- [ ]"):
             task = line.split("]")[1].strip()
-            print(f"Executing task from plan: {task}")
+            log.info("jules.agent.plan.executing_task", task=task)
             # Here you would add the logic to actually execute the task.
             # For now, we will just print a message.
             if "Scaffold TypeScript interfaces" in task:
-                print("  -> (Placeholder) Scaffolding TypeScript interfaces...")
+                log.debug("jules.agent.plan.task.placeholder", task="Scaffold TypeScript interfaces")
             elif "Validate schema" in task:
-                print("  -> (Placeholder) Validating schema...")
+                log.debug("jules.agent.plan.task.placeholder", task="Validate schema")
             elif "Write unit tests" in task:
-                print("  -> (Placeholder) Writing unit tests...")
+                log.debug("jules.agent.plan.task.placeholder", task="Write unit tests")
 
 
 def main():
-    print("Jules agent bootstrap starting")
+    log.info("jules.agent.bootstrap.starting")
 
     # Read and execute tasks from the PLAN.md file
     execute_plan_tasks()
@@ -113,12 +126,12 @@ def main():
     # Fetch the latest submission instead of creating a new one
     claim = get_latest_submission()
     if not claim:
-        print("No submission found. Exiting.")
+        log.warning("jules.agent.submission.not_found")
         return
 
-    print("Claim received:", claim)
+    log.info("jules.agent.submission.received", claim=claim)
     trace = run_sympy_check(claim)
-    print("Numeric trace:", trace)
+    log.info("jules.agent.sympy.trace", trace=trace)
     # emit verify event
     post_event("verify", {"claim_id": claim["claim_id"], "trace": trace})
 
@@ -133,7 +146,7 @@ def main():
     checkpoint_artifact()
     # open PR stub
     open_pr_stub("agent/jules/bootstrap", "bootstrap pipeline test")
-    print("Jules finished")
+    log.info("jules.agent.finished")
 
 if __name__ == "__main__":
     main()
