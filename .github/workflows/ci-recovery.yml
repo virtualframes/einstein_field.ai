@@ -12,7 +12,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'failure'
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
 
       - name: Download failure logs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
